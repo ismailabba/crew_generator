@@ -3,7 +3,7 @@ from crewai import Task
 from textwrap import dedent
 
 
-class CustomTasks:
+class CrewTasks:
     
     def break_goal(self, agent, goal):
         return Task(
@@ -18,8 +18,8 @@ class CustomTasks:
             ),
             
         expected_output=
-          "The expected output of the task should be a list of task whereby each 
-              """item in the list is an object that has task name, description and expected output e.g
+          """The expected output of the task should be a list of task whereby each 
+              item in the list is an object that has task name, description and expected output e.g
             Task_Name* = Select City
             Description=dedent(f"""
 
@@ -36,18 +36,13 @@ class CustomTasks:
                 forecast and attractions. """
        
             """),
-            expected_output="Detailed report on the chosen city including flight costs, weather forecast, and attractions" """
+            expected_output="Detailed report on the chosen city including flight costs, weather forecast, and attractions """
 
             ,
             agent=agent,
         )
 
-
-
-
-
-
-    def assign_task(self, agent, tasks):
+    def assign_task(self, agent):
         return Task(
          
             description=dedent(
@@ -57,7 +52,7 @@ class CustomTasks:
             ***description***:Given the task list Map crew AI agents to the provided task list, defining each agent's responsibility, goal, and motivational context. Provide a concise agent profile, 
             including their professional history, relevant skills, and expertise
 
-             Use this variable: {tasks}
+            
             """
             ),
             
@@ -76,9 +71,7 @@ class CustomTasks:
             agent=agent,
         )
 
-
-
-    def assign_tool(self, agent, agentsList):
+    def assign_tool(self, agent):
         return Task(
                   description=dedent(
                 f""" 
@@ -88,7 +81,7 @@ class CustomTasks:
             ensuring they have the required resources to complete their assigned tasks. 
             Specify the tools needed for each agent to execute their task
 
-             Use this variable: {agentsList}
+            
             """
             
             
