@@ -78,8 +78,8 @@ class CrewTasks:
             ***Task***: Assign necessary tools to agents***
           
             ***description***:Given the crewai agent list Allocate the necessary tools to each agent, 
-            ensuring they have the required resources to complete their assigned tasks. 
-            Specify the tools needed for each agent to execute their task
+            ensuring they have the required resources to complete their assigned tasks.search the internet for crewai tools for to understand how to assign tools
+            Specify the tools needed for each agent to execute their task. the task should be soemething than a computer can execu
 
             
             """
@@ -90,7 +90,7 @@ class CrewTasks:
             """The expected output of the task should be an array of 
             crewAi agent responsible for each of the task on the list with 
             tools they might need to accomplish the task
-            an agent should like this.
+            an agent should like this. below is an example.
 
             Agent(
                 role='Local Expert at this city',
@@ -98,8 +98,8 @@ class CrewTasks:
                 backstory= A knowledgeable local guide with extensive information
                 about the city, it's attractions and customs,
                 tools=[
-                SearchTools.search_internet,
-                BrowserTools.scrape_and_summarize_website,
+                SearchTools.search_internet: description of tool,
+                BrowserTools.scrape_and_summarize_website:description of tool,
                 ],
             """,
             agent=agent,

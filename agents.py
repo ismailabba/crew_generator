@@ -2,6 +2,7 @@ from crewai import Agent
 from textwrap import dedent
 from langchain.llms import OpenAI, Ollama
 from langchain_openai import ChatOpenAI
+from tools.search_tools import SearchTools
 
 
 # This is an example of how to define custom agents.
@@ -51,7 +52,7 @@ class CrewGeneratorAgents:
         return Agent(
             role="Tool Assigning Agent",
             backstory=dedent(f"""As an expert manager and crew AI developer with years of experience, I will assign the most suitable tools to each agent, ensuring they have the necessary resources to achieve their goals. I will utilize my expertise to pair each agent with the optimal tools, considering their unique strengths, task requirements, and desired outcomes."""),
-            goal=dedent(f"""Allocate the necessary tools to each agent, 
+            goal=dedent(f"""Allocate the necessary tools to each agent search the internet for crewai tools for to understand how to assign tools, 
             ensuring they have the required resources to complete their assigned tasks. Specify the tools needed for each agent to execute their task, 
             example calculators, web scrapers,
              statistical analysis software,."""),
@@ -59,5 +60,8 @@ class CrewGeneratorAgents:
             allow_delegation=False,
             verbose=True,
             llm=self.OpenAIGPT35,
+            tools=[
+            SearchTools.search_internet,
+        ],
         )
 
