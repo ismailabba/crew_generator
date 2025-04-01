@@ -72,6 +72,7 @@ class CrewTasks:
         )
 
     def assign_tool(self, agent):
+
         return Task(
                   description=dedent(
                 f""" 
@@ -79,7 +80,8 @@ class CrewTasks:
           
             ***description***:Given the crewai agent list Allocate the necessary tools to each agent, 
             ensuring they have the required resources to complete their assigned tasks.search the internet for crewai tools for to understand how to assign tools
-            Specify the tools needed for each agent to execute their task. the task should be soemething than a computer can execu
+            Specify the tools needed for each agent to execute their task. the task should be soemething than a computer can execute. if a tool is not neccessary to execute
+              the task leave it as blank, 
 
             
             """
@@ -90,8 +92,41 @@ class CrewTasks:
             """The expected output of the task should be an array of 
             crewAi agent responsible for each of the task on the list with 
             tools they might need to accomplish the task
-            an agent should like this. below is an example.
+            an agent should like this and it should also include a 
+            detailed information on what you know about building crewai agents the logic. below is an example. 
 
+            Agent(
+                role='Local Expert at this city',
+                goal='Provide the BEST insights about the selected city',
+                backstory= A knowledgeable local guide with extensive information
+                about the city, it's attractions and customs,
+                tools=[
+                SearchTools.search_internet: full detail description of the tool,
+                BrowserTools.scrape_and_summarize_website: full detail description description of tool,
+                ],
+            """,
+            agent=agent
+         
+        )
+    
+    def build_tool(self, agent):
+
+        return Task(
+                  description=dedent(
+                f""" 
+            ***Task***:  You will build tools using python***
+          
+            ***description***:Given the crewai agent list understand the 
+              required tools for each and write the full python code
+
+            """
+            
+            
+            ),
+               expected_output=
+            """The expected output of the task should be an array of 
+            crewAi agent responsible for each of the task on the list with 
+            tools and the full python code for the tools example
             Agent(
                 role='Local Expert at this city',
                 goal='Provide the BEST insights about the selected city',
@@ -101,7 +136,14 @@ class CrewTasks:
                 SearchTools.search_internet: description of tool,
                 BrowserTools.scrape_and_summarize_website:description of tool,
                 ],
+                SearchTools.search_internet:{
+                   codeExplanation: details about the code
+                   code: the full python code of the tools
+                }
+
+
             """,
-            agent=agent,
+            agent=agent
+         
         )
- 
+    

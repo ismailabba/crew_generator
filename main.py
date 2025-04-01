@@ -31,6 +31,7 @@ class CrewGenerator:
         goal_breaker_agent= agents.goal_breaker_agent()
         task_assigning_agent = agents.task_assigning_agent()
         tool_assigning_agent = agents.tool_assigning_agent()
+        tool_building_agent = agents.tool_building_agent()
 
         # Custom tasks include agent name and variables as input
         break_goal = tasks.break_goal(
@@ -49,10 +50,17 @@ class CrewGenerator:
             
         )
 
+        
+        build_tool = tasks.build_tool(
+            tool_building_agent,
+            
+        )
+
+
         # Define your custom crew here
         crew = Crew(
-            agents=[goal_breaker_agent, task_assigning_agent, tool_assigning_agent],
-            tasks =[break_goal, assign_task, assign_tool ],
+            agents=[goal_breaker_agent, task_assigning_agent, tool_assigning_agent, tool_building_agent],
+            tasks =[break_goal, assign_task, assign_tool, build_tool ],
             verbose=True,
         )
 
