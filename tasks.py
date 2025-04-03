@@ -62,10 +62,18 @@ class CrewTasks:
             an agent should like this.
 
             Agent(
+
                 role='Local Expert at this city',
                 goal='Provide the BEST insights about the selected city',
                 backstory= A knowledgeable local guide with extensive information
                 about the city, it's attractions and customs,)
+                task:{
+                  Task_Name: Determine Investment Strateg
+                  Description: Develop an investment strategy based on the analysis of Dangote stock, industry trends, and risk factors, outlining the recommended approach for investing in Dangote stock.
+                  Expected Output: Detailed investment strategy proposal with clear recommendations and rationale.
+                }
+
+                the task is what the agent was assigned to
             """
          ,
             agent=agent,
@@ -78,10 +86,14 @@ class CrewTasks:
                 f""" 
             ***Task***: Assign necessary tools to agents***
           
-            ***description***:Given the crewai agent list Allocate the necessary tools to each agent, 
-            ensuring they have the required resources to complete their assigned tasks.search the internet for crewai tools for to understand how to assign tools
-            Specify the tools needed for each agent to execute their task. the task should be soemething than a computer can execute. if a tool is not neccessary to execute
-              the task leave it as blank, 
+            ***description***:
+                Given the crewai agent list analyse the agent list and tasks it was assigned and expected output, search the crewAi website for readily available tools
+                Understand what a tool is
+                if there are available tools that agents can use, allocate them to the agents that they can execute their assigned task 
+                if there are no readily available tool 
+                Allocate the necessary tools to each agent, ensuring they have the required resources to complete their assigned tasks.search the internet for crewai tools for to understand how to assign tools
+                Specify the tools needed for each agent to execute their task. the task should be soemething than a computer can execute. if a tool is not neccessary to execute
+                the task leave it as blank, 
 
             
             """
@@ -100,10 +112,15 @@ class CrewTasks:
                 goal='Provide the BEST insights about the selected city',
                 backstory= A knowledgeable local guide with extensive information
                 about the city, it's attractions and customs,
-                tools=[
-                SearchTools.search_internet: full detail description of the tool,
-                BrowserTools.scrape_and_summarize_website: full detail description description of tool,
-                ],
+                 task:{
+                  Task_Name: Determine Investment Strateg
+                  Description: Develop an investment strategy based on the analysis of Dangote stock, industry trends, and risk factors, outlining the recommended approach for investing in Dangote stock.
+                  Expected Output: Detailed investment strategy proposal with clear recommendations and rationale.
+                }
+                tools={
+                    SearchTools.search_internet: description of tool,
+                    BrowserTools.scrape_and_summarize_website:description of tool,
+                },
             """,
             agent=agent
          
@@ -116,8 +133,8 @@ class CrewTasks:
                 f""" 
             ***Task***:  You will build tools using python***
           
-            ***description***:Given the crewai agent list understand the 
-              required tools for each and write the full python code
+            ***description***:Given the crewai agent list
+              with the required tools use python to build all the tools
 
             """
             
@@ -126,7 +143,7 @@ class CrewTasks:
                expected_output=
             """The expected output of the task should be an array of 
             crewAi agent responsible for each of the task on the list with 
-            tools and the full python code for the tools example
+            tools and the python code for the tools
             Agent(
                 role='Local Expert at this city',
                 goal='Provide the BEST insights about the selected city',
@@ -138,7 +155,7 @@ class CrewTasks:
                 ],
                 SearchTools.search_internet:{
                    codeExplanation: details about the code
-                   code: the full python code of the tools
+                   code: the full python code 
                 }
 
 

@@ -20,8 +20,28 @@ from crewai_tools import SerperDevTool, \
                          ScrapeWebsiteTool, \
                          WebsiteSearchTool
 
+crew_scrape_tool = ScrapeWebsiteTool(
+    website_url="https://docs.crewai.com/introduction"
+)
+
+
+task_scrape_tool = ScrapeWebsiteTool(
+    website_url="https://docs.crewai.com/concepts/tasks"
+)
 docs_scrape_tool = ScrapeWebsiteTool(
     website_url="https://docs.crewai.com/how-to/Creating-a-Crew-and-kick-it-off/"
+)
+tool_scrape_tool = ScrapeWebsiteTool(
+    website_url="https://docs.crewai.com/concepts/tools"
+)
+
+agent_scrape_tool = ScrapeWebsiteTool(
+    website_url="https://docs.crewai.com/concepts/agents"
+)
+
+
+agent_scrape_tool = ScrapeWebsiteTool(
+    website_url="https://docs.crewai.com/concepts/agents"
 )
 class CrewGeneratorAgents:
     
@@ -38,15 +58,16 @@ class CrewGeneratorAgents:
         return Agent(
             role="Goal Breaker Agent",
             backstory=dedent(f"""An expert manager with decades of experience as an AI engineer,
-             specializing in setting tasks for crew AI agents, 
+             specializing in setting tasks for crew AI agents. Based on my understanding of crew ai and tasks, 
              I take a specified goal and systematically break it down into a hierarchical structure 
-             of smaller, actionable tasks.
+             of smaller, actionable tasks that feeds into the bigger picture.
              """
             ),
             goal=dedent(f"""Create a task list to achieve [Goal]. 
             Each task should have a unique name and 
             be a necessary step to accomplish the goal"""),
-            tool=[docs_scrape_tool],
+
+            tools=[crew_scrape_tool, task_scrape_tool],
             allow_delegation=False,
             verbose=True,
             llm=self.OpenAIGPT35,
@@ -62,7 +83,7 @@ class CrewGeneratorAgents:
             goal=dedent(f"""Map crew AI agents to the provided task list, defining each agent's responsibility, goal, and motivational context. Provide a concise agent profile, 
             including their professional history, relevant skills, and expertise, 
             to facilitate effective task execution."""),
-             tool=[docs_scrape_tool],
+            tools=[agent_scrape_tool, docs_scrape_tool, crew_scrape_tool, task_scrape_tool],
             allow_delegation=False,
             verbose=True,
             llm=self.OpenAIGPT35,
@@ -86,7 +107,7 @@ class CrewGeneratorAgents:
             llm=self.OpenAIGPT35,
            
             # tools=[web_search_tool],
-       tool=[docs_scrape_tool]
+            tools=[tool_scrape_tool]
 
         )
     

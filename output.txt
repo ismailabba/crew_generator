@@ -1,0 +1,982 @@
+developments in {topic}. Known for your ability to find the most relevant
+ information and present it in a clear and concise manner.
+reporting_analyst:
+ role: >
+ {topic} Reporting Analyst
+ goal: >
+ Create detailed reports based on {topic} data analysis and research findings
+ backstory: >
+ You're a meticulous analyst with a keen eye for detail. You're known for
+ your ability to turn complex data into clear and concise reports, making
+ it easy for others to understand and act on the information you provide.
+To use this YAML configuration in your code, create a crew class that inherits from CrewBase:
+Code# src/latest_ai_development/crew.py
+from crewai import Agent, Crew, Process
+from crewai.project import CrewBase, agent, crew
+from crewai_tools import SerperDevTool
+@CrewBase
+class LatestAiDevelopmentCrew():
+ """LatestAiDevelopment crew"""
+ agents_config = "config/agents.yaml"
+ @agent
+ def researcher(self) -> Agent:
+ return Agent(
+ config=self.agents_config['researcher'],
+ verbose=True,
+ tools=[SerperDevTool()]
+ )
+ @agent
+ def reporting_analyst(self) -> Agent:
+ return Agent(
+ config=self.agents_config['reporting_analyst'],
+ verbose=True
+ )
+The names you use in your YAML files (agents.yaml) should match the method names in your Python code.
+​Direct Code Definition
+You can create agents directly in code by instantiating the Agent class. Here’s a comprehensive example showing all available parameters:
+Codefrom crewai import Agent
+from crewai_tools import SerperDevTool
+# Create an agent with all available parameters
+agent = Agent(
+ role="Senior Data Scientist",
+ goal="Analyze and interpret complex datasets to provide actionable insights",
+ backstory="With over 10 years of experience in data science and machine learning, "
+ "you excel at finding patterns in complex datasets.",
+ llm="gpt-4", # Default: OPENAI_MODEL_NAME or "gpt-4"
+ function_calling_llm=None, # Optional: Separate LLM for tool calling
+ memory=True, # Default: True
+ verbose=False, # Default: False
+ allow_delegation=False, # Default: False
+ max_iter=20, # Default: 20 iterations
+ max_rpm=None, # Optional: Rate limit for API calls
+ max_execution_time=None, # Optional: Maximum execution time in seconds
+ max_retry_limit=2, # Default: 2 retries on error
+ allow_code_execution=False, # Default: False
+ code_execution_mode="safe", # Default: "safe" (options: "safe", "unsafe")
+ respect_context_window=True, # Default: True
+ use_system_prompt=True, # Default: True
+ tools=[SerperDevTool()], # Optional: List of tools
+ knowledge_sources=None, # Optional: List of knowledge sources
+ embedder=None, # Optional: Custom embedder configuration
+ system_template=None, # Optional: Custom system prompt template
+ prompt_template=None, # Optional: Custom prompt template
+ response_template=None, # Optional: Custom response template
+ step_callback=None, # Optional: Callback function for monitoring
+)
+Let’s break down some key parameter combinations for common use cases:
+​Basic Research Agent
+Coderesearch_agent = Agent(
+ role="Research Analyst",
+ goal="Find and summarize information about specific topics",
+ backstory="You are an experienced researcher with attention to detail",
+ tools=[SerperDevTool()],
+ verbose=True # Enable logging for debugging
+)
+​Code Development Agent
+Codedev_agent = Agent(
+ role="Senior Python Developer",
+ goal="Write and debug Python code",
+ backstory="Expert Python developer with 10 years of experience",
+ allow_code_execution=True,
+ code_execution_mode="safe", # Uses Docker for safety
+ max_execution_time=300, # 5-minute timeout
+ max_retry_limit=3 # More retries for complex code tasks
+)
+​Long-Running Analysis Agent
+Codeanalysis_agent = Agent(
+ role="Data Analyst",
+ goal="Perform deep analysis of large datasets",
+ backstory="Specialized in big data analysis and pattern recognition",
+ memory=True,
+ respect_context_window=True,
+ max_rpm=10, # Limit API calls
+ function_calling_llm="gpt-4o-mini" # Cheaper model for tool calls
+)
+​Custom Template Agent
+Codecustom_agent = Agent(
+ role="Customer Service Representative",
+ goal="Assist customers with their inquiries",
+ backstory="Experienced in customer support with a focus on satisfaction",
+ system_template="""<|start_header_id|>system<|end_header_id|>
+ {{ .System }}<|eot_id|>""",
+ prompt_template="""<|start_header_id|>user<|end_header_id|>
+ {{ .Prompt }}<|eot_id|>""",
+ response_template="""<|start_header_id|>assistant<|end_header_id|>
+ {{ .Response }}<|eot_id|>""",
+)
+​Parameter Details
+​Critical Parameters
+role, goal, and backstory are required and shape the agent’s behavior
+llm determines the language model used (default: OpenAI’s GPT-4)
+​Memory and Context
+memory: Enable to maintain conversation history
+respect_context_window: Prevents token limit issues
+knowledge_sources: Add domain-specific knowledge bases
+​Execution Control
+max_iter: Maximum attempts before giving best answer
+max_execution_time: Timeout in seconds
+max_rpm: Rate limiting for API calls
+max_retry_limit: Retries on error
+​Code Execution
+allow_code_execution: Must be True to run code
+code_execution_mode:
+"safe": Uses Docker (recommended for production)
+"unsafe": Direct execution (use only in trusted environments)
+​Templates
+system_template: Defines agent’s core behavior
+prompt_template: Structures input format
+response_template: Formats agent responses
+When using custom templates, you can use variables like {role}, {goal}, and {input} in your templates. These will be automatically populated during execution.
+​Agent Tools
+Agents can be equipped with various tools to enhance their capabilities. CrewAI supports tools from:
+CrewAI Toolkit
+LangChain Tools
+Here’s how to add tools to an agent:
+Codefrom crewai import Agent
+from crewai_tools import SerperDevTool, WikipediaTools
+# Create tools
+search_tool = SerperDevTool()
+wiki_tool = WikipediaTools()
+# Add tools to agent
+researcher = Agent(
+ role="AI Technology Researcher",
+ goal="Research the latest AI developments",
+ tools=[search_tool, wiki_tool],
+ verbose=True
+)
+​Agent Memory and Context
+Agents can maintain memory of their interactions and use context from previous tasks. This is particularly useful for complex workflows where information needs to be retained across multiple tasks.
+Codefrom crewai import Agent
+analyst = Agent(
+ role="Data Analyst",
+ goal="Analyze and remember complex data patterns",
+ memory=True, # Enable memory
+ verbose=True
+)
+When memory is enabled, the agent will maintain context across multiple interactions, improving its ability to handle complex, multi-step tasks.
+​Important Considerations and Best Practices
+​Security and Code Execution
+When using allow_code_execution, be cautious with user input and always validate it
+Use code_execution_mode: "safe" (Docker) in production environments
+Consider setting appropriate max_execution_time limits to prevent infinite loops
+​Performance Optimization
+Use respect_context_window: true to prevent token limit issues
+Set appropriate max_rpm to avoid rate limiting
+Enable cache: true to improve performance for repetitive tasks
+Adjust max_iter and max_retry_limit based on task complexity
+​Memory and Context Management
+Use memory: true for tasks requiring historical context
+Leverage knowledge_sources for domain-specific information
+Configure embedder_config when using custom embedding models
+Use custom templates (system_template, prompt_template, response_template) for fine-grained control over agent behavior
+​Agent Collaboration
+Enable allow_delegation: true when agents need to work together
+Use step_callback to monitor and log agent interactions
+Consider using different LLMs for different purposes:
+Main llm for complex reasoning
+function_calling_llm for efficient tool usage
+​Model Compatibility
+Set use_system_prompt: false for older models that don’t support system messages
+Ensure your chosen llm supports the features you need (like function calling)
+​Troubleshooting Common Issues
+Rate Limiting: If you’re hitting API rate limits:
+Implement appropriate max_rpm
+Use caching for repetitive operations
+Consider batching requests
+Context Window Errors: If you’re exceeding context limits:
+Enable respect_context_window
+Use more efficient prompts
+Clear agent memory periodically
+Code Execution Issues: If code execution fails:
+Verify Docker is installed for safe mode
+Check execution permissions
+Review code sandbox settings
+Memory Issues: If agent responses seem inconsistent:
+Verify memory is enabled
+Check knowledge source configuration
+Review conversation history management
+Remember that agents are most effective when configured according to their specific use case. Take time to understand your requirements and adjust these parameters accordingly.Was this page helpful?YesNoFingerprintingTaskswebsitexgithublinkedinyoutuberedditPowered by MintlifyOn this pageOverview of an AgentAgent AttributesCreating AgentsYAML Configuration (Recommended)Direct Code DefinitionBasic Research AgentCode Development AgentLong-Running Analysis AgentCustom Template AgentParameter DetailsCritical ParametersMemory and ContextExecution ControlCode ExecutionTemplatesAgent ToolsAgent Memory and ContextImportant Considerations and Best PracticesSecurity and Code ExecutionPerformance OptimizationMemory and Context ManagementAgent CollaborationModel CompatibilityTroubleshooting Common Issues
+
+Thought: I need to gather information about the crewAI agents and their expertise to map them to the provided task list.
+
+Action: Read website content
+Action Input: {"url": "https://docs.crewai.com/concepts/agents"}
+
+Agents - CrewAICrewAI home pageSearch CrewAI docscrewAIInc/crewAIcrewAIInc/crewAISearch...NavigationCore ConceptsAgentsGet StartedExamplesCommunityGet StartedIntroductionInstallationQuickstartChangelogGuidesConceptsAgentsCrewsFlowsAdvancedCore ConceptsAgentsTasksCrewsFlowsKnowledgeLLMsProcessesCollaborationTrainingMemoryPlanningTestingCLIToolsEvent ListenersUsing LangChain ToolsUsing LlamaIndex ToolsHow to GuidesCreate Custom ToolsSequential ProcessesHierarchical ProcessCreate Your Own Manager AgentConnect to any LLMCustomize AgentsUsing Multimodal AgentsCoding AgentsForce Tool Output as ResultHuman Input on ExecutionKickoff Crew AsynchronouslyKickoff Crew for EachReplay Tasks from Latest Crew KickoffConditional TasksAgent Monitoring & ObservabilityAgentOps IntegrationLangfuse IntegrationLangtrace IntegrationMLflow IntegrationOpenLIT IntegrationOpik IntegrationAgent Monitoring with Arize PhoenixPortkey IntegrationWeave IntegrationToolsAI Mind ToolApify ActorsBedrock Invoke Agent ToolBedrock Knowledge Base RetrieverBrave SearchBrowserbase Web LoaderCode Docs RAG SearchCode InterpreterComposio ToolCSV RAG SearchDALL-E ToolDirectory RAG SearchDirectory ReadDOCX RAG SearchEXA Search Web LoaderFile ReadFile WriteFirecrawl Crawl WebsiteFirecrawl Scrape WebsiteFirecrawl SearchGithub SearchHyperbrowser Load ToolLinkup Search ToolLlamaIndex ToolGoogle Serper SearchS3 Reader ToolS3 Writer ToolScrapegraph Scrape ToolScrape Element From Website ToolJSON RAG SearchMDX RAG SearchMySQL RAG SearchMultiOn ToolNL2SQL ToolPatronus Evaluation ToolsPDF RAG SearchPG RAG SearchQdrant Vector Search ToolRAG ToolScrape WebsiteScrapfly Scrape Website ToolSelenium ScraperSnowflake Search ToolSpider ScraperTXT RAG SearchVision ToolWeaviate Vector SearchWebsite RAG SearchXML RAG SearchYouTube Channel RAG SearchYouTube Video RAG SearchTelemetryTelemetryCore ConceptsAgentsDetailed guide on creating and managing agents within the CrewAI framework.​OOverview of an Agent
+In the CrewAI framework, an Agent is an autonomous unit that can:
+Perform specific tasks
+Make decisions based on its role and goal
+Use tools to accomplish objectives
+Communicate and collaborate with other agents
+Maintain memory of interactions
+Delegate tasks when allowed
+Think of an agent as a specialized team member with specific skills, expertise, and responsibilities. For example, a Researcher agent might excel at gathering and analyzing information, while a Writer agent might be better at creating content.
+​Agent Attributes
+AttributeParameterTypeDescriptionRolerolestrDefines the agent’s function and expertise within the crew.GoalgoalstrThe individual objective that guides the agent’s decision-making.BackstorybackstorystrProvides context and personality to the agent, enriching interactions.LLM (optional)llmUnion[str, LLM, Any]Language model that powers the agent. Defaults to the model specified in OPENAI_MODEL_NAME or “gpt-4”.Tools (optional)toolsList[BaseTool]Capabilities or functions available to the agent. Defaults to an empty list.Function Calling LLM (optional)function_calling_llmOptional[Any]Language model for tool calling, overrides crew’s LLM if specified.Max Iterations (optional)max_iterintMaximum iterations before the agent must provide its best answer. Default is 20.Max RPM (optional)max_rpmOptional[int]Maximum requests per minute to avoid rate limits.Max Execution Time (optional)max_execution_timeOptional[int]Maximum time (in seconds) for task execution.Memory (optional)memoryboolWhether the agent should maintain memory of interactions. Default is True.Verbose (optional)verboseboolEnable detailed execution logs for debugging. Default is False.Allow Delegation (optional)allow_delegationboolAllow the agent to delegate tasks to other agents. Default is False.Step Callback (optional)step_callbackOptional[Any]Function called after each agent step, overrides crew callback.Cache (optional)cacheboolEnable caching for tool usage. Default is True.System Template (optional)system_templateOptional[str]Custom system prompt template for the agent.Prompt Template (optional)prompt_templateOptional[str]Custom prompt template for the agent.Response Template (optional)response_templateOptional[str]Custom response template for the agent.Allow Code Execution (optional)allow_code_executionOptional[bool]Enable code execution for the agent. Default is False.Max Retry Limit (optional)max_retry_limitintMaximum number of retries when an error occurs. Default is 2.Respect Context Window (optional)respect_context_windowboolKeep messages under context window size by summarizing. Default is True.Code Execution Mode (optional)code_execution_modeLiteral["safe", "unsafe"]Mode for code execution: ‘safe’ (using Docker) or ‘unsafe’ (direct). Default is ‘safe’.Embedder (optional)embedderOptional[Dict[str, Any]]Configuration for the embedder used by the agent.Knowledge Sources (optional)knowledge_sourcesOptional[List[BaseKnowledgeSource]]Knowledge sources available to the agent.Use System Prompt (optional)use_system_promptOptional[bool]Whether to use system prompt (for o1 model support). Default is True.
+​Creating Agents
+There are two ways to create agents in CrewAI: using YAML configuration (recommended) or defining them directly in code.
+​YAML Configuration (Recommended)
+Using YAML configuration provides a cleaner, more maintainable way to define agents. We strongly recommend using this approach in your CrewAI projects.
+After creating your CrewAI project as outlined in the Installation section, navigate to the src/latest_ai_development/config/agents.yaml file and modify the template to match your requirements.  
+Variables in your YAML files (like {topic}) will be replaced with values from your inputs when running the crew:Codecrew.kickoff(inputs={'topic': 'AI Agents'})
+Here’s an example of how to configure agents using YAML:
+agents.yaml# src/latest_ai_development/config/agents.yaml
+researcher:
+ role: >
+ {topic} Senior Data Researcher
+ goal: >
+ Uncover cutting-edge developments in {topic}
+ backstory: >
+ You're a seasoned researcher with a knack for uncovering the latest
+ developments in {topic}. Known for your ability to find the most relevant
+ information and present it in a clear and concise manner.
+reporting_analyst:
+ role: >
+ {topic} Reporting Analyst
+ goal: >
+ Create detailed reports based on {topic} data analysis and research findings
+ backstory: >
+ You're a meticulous analyst with a keen eye for detail. You're known for
+ your ability to turn complex data into clear and concise reports, making
+ it easy for others to understand and act on the information you provide.
+To use this YAML configuration in your code, create a crew class that inherits from CrewBase:
+Code# src/latest_ai_development/crew.py
+from crewai import Agent, Crew, Process
+from crewai.project import CrewBase, agent, crew
+from crewai_tools import SerperDevTool
+@CrewBase
+class LatestAiDevelopmentCrew():
+ """LatestAiDevelopment crew"""
+ agents_config = "config/agents.yaml"
+ @agent
+ def researcher(self) -> Agent:
+ return Agent(
+ config=self.agents_config['researcher'],
+ verbose=True,
+ tools=[SerperDevTool()]
+ )
+ @agent
+ def reporting_analyst(self) -> Agent:
+ return Agent(
+ config=self.agents_config['reporting_analyst'],
+ verbose=True
+ )
+The names you use in your YAML files (agents.yaml) should match the method names in your Python code.
+​Direct Code Definition
+You can create agents directly in code by instantiating the Agent class. Here’s a comprehensive example showing all available parameters:
+Codefrom crewai import Agent
+from crewai_tools import SerperDevTool
+# Create an agent with all available parameters
+agent = Agent(
+ role="Senior Data Scientist",
+ goal="Analyze and interpret complex datasets to provide actionable insights",
+ backstory="With over 10 years of experience in data science and machine learning, "
+ "you excel at finding patterns in complex datasets.",
+ llm="gpt-4", # Default: OPENAI_MODEL_NAME or "gpt-4"
+ function_calling_llm=None, # Optional: Separate LLM for tool calling
+ memory=True, # Default: True
+ verbose=False, # Default: False
+ allow_delegation=False, # Default: False
+ max_iter=20, # Default: 20 iterations
+ max_rpm=None, # Optional: Rate limit for API calls
+ max_execution_time=None, # Optional: Maximum execution time in seconds
+ max_retry_limit=2, # Default: 2 retries on error
+ allow_code_execution=False, # Default: False
+ code_execution_mode="safe", # Default: "safe" (options: "safe", "unsafe")
+ respect_context_window=True, # Default: True
+ use_system_prompt=True, # Default: True
+ tools=[SerperDevTool()], # Optional: List of tools
+ knowledge_sources=None, # Optional: List of knowledge sources
+ embedder=None, # Optional: Custom embedder configuration
+ system_template=None, # Optional: Custom system prompt template
+ prompt_template=None, # Optional: Custom prompt template
+ response_template=None, # Optional: Custom response template
+ step_callback=None, # Optional: Callback function for monitoring
+)
+Let’s break down some key parameter combinations for common use cases:
+​Basic Research Agent
+Coderesearch_agent = Agent(
+ role="Research Analyst",
+ goal="Find and summarize information about specific topics",
+ backstory="You are an experienced researcher with attention to detail",
+ tools=[SerperDevTool()],
+ verbose=True # Enable logging for debugging
+)
+​Code Development Agent
+Codedev_agent = Agent(
+ role="Senior Python Developer",
+ goal="Write and debug Python code",
+ backstory="Expert Python developer with 10 years of experience",
+ allow_code_execution=True,
+ code_execution_mode="safe", # Uses Docker for safety
+ max_execution_time=300, # 5-minute timeout
+ max_retry_limit=3 # More retries for complex code tasks
+)
+​Long-Running Analysis Agent
+Codeanalysis_agent = Agent(
+ role="Data Analyst",
+ goal="Perform deep analysis of large datasets",
+ backstory="Specialized in big data analysis and pattern recognition",
+ memory=True,
+ respect_context_window=True,
+ max_rpm=10, # Limit API calls
+ function_calling_llm="gpt-4o-mini" # Cheaper model for tool calls
+)
+​Custom Template Agent
+Codecustom_agent = Agent(
+ role="Customer Service Representative",
+ goal="Assist customers with their inquiries",
+ backstory="Experienced in customer support with a focus on satisfaction",
+ system_template="""<|start_header_id|>system<|end_header_id|>
+ {{ .System }}<|eot_id|>""",
+ prompt_template="""<|start_header_id|>user<|end_header_id|>
+ {{ .Prompt }}<|eot_id|>""",
+ response_template="""<|start_header_id|>assistant<|end_header_id|>
+ {{ .Response }}<|eot_id|>""",
+)
+​Parameter Details
+​Critical Parameters
+role, goal, and backstory are required and shape the agent’s behavior
+llm determines the language model used (default: OpenAI’s GPT-4)
+​Memory and Context
+memory: Enable to maintain conversation history
+respect_context_window: Prevents token limit issues
+knowledge_sources: Add domain-specific knowledge bases
+​Execution Control
+max_iter: Maximum attempts before giving best answer
+max_execution_time: Timeout in seconds
+max_rpm: Rate limiting for API calls
+max_retry_limit: Retries on error
+​Code Execution
+allow_code_execution: Must be True to run code
+code_execution_mode:
+"safe": Uses Docker (recommended for production)
+"unsafe": Direct execution (use only in trusted environments)
+​Templates
+system_template: Defines agent’s core behavior
+prompt_template: Structures input format
+response_template: Formats agent responses
+When using custom templates, you can use variables like {role}, {goal}, and {input} in your templates. These will be automatically populated during execution.
+​Agent Tools
+Agents can be equipped with various tools to enhance their capabilities. CrewAI supports tools from:
+CrewAI Toolkit
+LangChain Tools
+Here’s how to add tools to an agent:
+Codefrom crewai import Agent
+from crewai_tools import SerperDevTool, WikipediaTools
+# Create tools
+search_tool = SerperDevTool()
+wiki_tool = WikipediaTools()
+# Add tools to agent
+researcher = Agent(
+ role="AI Technology Researcher",
+ goal="Research the latest AI developments",
+ tools=[search_tool, wiki_tool],
+ verbose=True
+)
+​Agent Memory and Context
+Agents can maintain memory of their interactions and use context from previous tasks. This is particularly useful for complex workflows where information needs to be retained across multiple tasks.
+Codefrom crewai import Agent
+analyst = Agent(
+ role="Data Analyst",
+ goal="Analyze and remember complex data patterns",
+ memory=True, # Enable memory
+ verbose=True
+)
+When memory is enabled, the agent will maintain context across multiple interactions, improving its ability to handle complex, multi-step tasks.
+​Important Considerations and Best Practices
+​Security and Code Execution
+When using allow_code_execution, be cautious with user input and always validate it
+Use code_execution_mode: "safe" (Docker) in production environments
+Consider setting appropriate max_execution_time limits to prevent infinite loops
+​Performance Optimization
+Use respect_context_window: true to prevent token limit issues
+Set appropriate max_rpm to avoid rate limiting
+Enable cache: true to improve performance for repetitive tasks
+Adjust max_iter and max_retry_limit based on task complexity
+​Memory and Context Management
+Use memory: true for tasks requiring historical context
+Leverage knowledge_sources for domain-specific information
+Configure embedder_config when using custom embedding models
+Use custom templates (system_template, prompt_template, response_template) for fine-grained control over agent behavior
+​Agent Collaboration
+Enable allow_delegation: true when agents need to work together
+Use step_callback to monitor and log agent interactions
+Consider using different LLMs for different purposes:
+Main llm for complex reasoning
+function_calling_llm for efficient tool usage
+​Model Compatibility
+Set use_system_prompt: false for older models that don’t support system messages
+Ensure your chosen llm supports the features you need (like function calling)
+​Troubleshooting Common Issues
+Rate Limiting: If you’re hitting API rate limits:
+Implement appropriate max_rpm
+Use caching for repetitive operations
+Consider batching requests
+Context Window Errors: If you’re exceeding context limits:
+Enable respect_context_window
+Use more efficient prompts
+Clear agent memory periodically
+Code Execution Issues: If code execution fails:
+Verify Docker is installed for safe mode
+Check execution permissions
+Review code sandbox settings
+Memory Issues: If agent responses seem inconsistent:
+Verify memory is enabled
+Check knowledge source configuration
+Review conversation history management
+Remember that agents are most effective when configured according to their specific use case. Take time to understand your requirements and adjust these parameters accordingly.Was this page helpful?YesNoFingerprintingTaskswebsitexgithublinkedinyoutuberedditPowered by MintlifyOn this pageOverview of an AgentAgent AttributesCreating AgentsYAML Configuration (Recommended)Direct Code DefinitionBasic Research AgentCode Development AgentLong-Running Analysis AgentCustom Template AgentParameter DetailsCritical ParametersMemory and ContextExecution ControlCode ExecutionTemplatesAgent ToolsAgent Memory and ContextImportant Considerations and Best PracticesSecurity and Code ExecutionPerformance OptimizationMemory and Context ManagementAgent CollaborationModel CompatibilityTroubleshooting Common Issues
+
+Final Answer: 
+
+[
+    Agent(
+        role='Data Analyst',
+        goal='Perform deep analysis of large datasets',
+        backstory='Specialized in big data analysis and pattern recognition',
+        task={
+            'Task Name': 'Collect Data on Dangote Stock',
+            'Description': 'Gather relevant data on Dangote stock including historical prices, market trends, and financial reports.',
+            'Expected Output': 'Comprehensive dataset on Dangote stock performance.'
+        }
+    ),
+    Agent(
+        role='Financial Analyst',
+        goal='Evaluate the financial performance of Dangote stock',
+        backstory='Experienced in financial data analysis and trend forecasting',
+        task={
+            'Task Name': 'Analyze Dangote Stock Performance',
+            'Description': 'Utilize statistical and financial analysis techniques to evaluate the historical performance of Dangote stock.',
+            'Expected Output': 'Evaluation report on the trends and patterns of Dangote stock.'
+        }
+    ),
+    Agent(
+        role='Industry Researcher',
+        goal='Identify growth opportunities and threats in the industry',
+        backstory='Knowledgeable in industry research and trend analysis',
+        task={
+            'Task Name': 'Conduct Industry Research',
+            'Description': 'Research the current state of the industry in which Dangote operates to identify potential growth opportunities and threats.',
+            'Expected Output': 'Industry analysis report with key insights.'
+        }
+    ),
+    Agent(
+        role='Risk Analyst',
+        goal='Assess the investment risks associated with Dangote stock',
+        backstory='Specialized in risk assessment and mitigation strategies',
+        task={
+            'Task Name': 'Assess Investment Risks',
+            'Description': 'Evaluate the risks associated with investing in Dangote stock, considering market volatility, economic conditions, and company-specific risks.',
+            'Expected Output': 'Risk assessment report highlighting potential investment challenges.'
+        }
+    ),
+    Agent(
+        role='Investment Strategist',
+        goal='Develop a detailed investment strategy for Dangote stock',
+        backstory='Experienced in formulating investment strategies based on data analysis',
+        task={
+            'Task Name': 'Develop Investment Strategy',
+            'Description': 'Formulate a detailed investment strategy for investing in Dangote stock based on the collected data and analysis.',
+            'Expected Output': 'Investment strategy document outlining the recommended approach.'
+        }
+    ),
+    Agent(
+        role='Financial Advisor',
+        goal='Provide investment recommendation based on analysis and strategy',
+        backstory='Skilled in providing financial advice and investment recommendations',
+        task={
+            'Task Name': 'Make Investment Recommendation',
+            'Description': 'Based on the analysis and strategy developed, make a final recommendation on whether investing in Dangote stock is advisable.',
+            'Expected Output': 'Investment recommendation with supporting rationale.'
+        }
+    )
+]
+
+> Finished chain.
+ [DEBUG]: == [Task Assigning Agent] Task output: [
+    Agent(
+        role='Data Analyst',
+        goal='Perform deep analysis of large datasets',
+        backstory='Specialized in big data analysis and pattern recognition',
+        task={
+            'Task Name': 'Collect Data on Dangote Stock',
+            'Description': 'Gather relevant data on Dangote stock including historical prices, market trends, and financial reports.',
+            'Expected Output': 'Comprehensive dataset on Dangote stock performance.'
+        }
+    ),
+    Agent(
+        role='Financial Analyst',
+        goal='Evaluate the financial performance of Dangote stock',
+        backstory='Experienced in financial data analysis and trend forecasting',
+        task={
+            'Task Name': 'Analyze Dangote Stock Performance',
+            'Description': 'Utilize statistical and financial analysis techniques to evaluate the historical performance of Dangote stock.',
+            'Expected Output': 'Evaluation report on the trends and patterns of Dangote stock.'
+        }
+    ),
+    Agent(
+        role='Industry Researcher',
+        goal='Identify growth opportunities and threats in the industry',
+        backstory='Knowledgeable in industry research and trend analysis',
+        task={
+            'Task Name': 'Conduct Industry Research',
+            'Description': 'Research the current state of the industry in which Dangote operates to identify potential growth opportunities and threats.',
+            'Expected Output': 'Industry analysis report with key insights.'
+        }
+    ),
+    Agent(
+        role='Risk Analyst',
+        goal='Assess the investment risks associated with Dangote stock',
+        backstory='Specialized in risk assessment and mitigation strategies',
+        task={
+            'Task Name': 'Assess Investment Risks',
+            'Description': 'Evaluate the risks associated with investing in Dangote stock, considering market volatility, economic conditions, and company-specific risks.',
+            'Expected Output': 'Risk assessment report highlighting potential investment challenges.'
+        }
+    ),
+    Agent(
+        role='Investment Strategist',
+        goal='Develop a detailed investment strategy for Dangote stock',
+        backstory='Experienced in formulating investment strategies based on data analysis',
+        task={
+            'Task Name': 'Develop Investment Strategy',
+            'Description': 'Formulate a detailed investment strategy for investing in Dangote stock based on the collected data and analysis.',
+            'Expected Output': 'Investment strategy document outlining the recommended approach.'
+        }
+    ),
+    Agent(
+        role='Financial Advisor',
+        goal='Provide investment recommendation based on analysis and strategy',
+        backstory='Skilled in providing financial advice and investment recommendations',
+        task={
+            'Task Name': 'Make Investment Recommendation',
+            'Description': 'Based on the analysis and strategy developed, make a final recommendation on whether investing in Dangote stock is advisable.',
+            'Expected Output': 'Investment recommendation with supporting rationale.'
+        }
+    )
+]
+
+
+ [DEBUG]: == Working Agent: Tool Assigning Agent
+ [INFO]: == Starting Task: 
+***Task***: Assign necessary tools to agents***
+
+***description***:
+    Given the crewai agent list analyse the agent list and tasks it was assigned and expected output, search the crewAi website for readily available tools
+    Understand what a tool is
+    if there are available tools that agents can use, allocate them to the agents that they can execute their assigned task 
+    if there are no readily available tool 
+    Allocate the necessary tools to each agent, ensuring they have the required resources to complete their assigned tasks.search the internet for crewai tools for to understand how to assign tools
+    Specify the tools needed for each agent to execute their task. the task should be soemething than a computer can execute. if a tool is not neccessary to execute
+    the task leave it as blank, 
+
+
+
+
+
+> Entering new CrewAgentExecutor chain...
+I need to analyze the tasks assigned to each agent and determine which tools are necessary for them to successfully complete their tasks.
+
+Action: Read website content
+Action Input: {"url": "https://docs.crewai.com/concepts/tools"} 
+
+Tools - CrewAICrewAI home pageSearch CrewAI docscrewAIInc/crewAIcrewAIInc/crewAISearch...NavigationCore ConceptsToolsGet StartedExamplesCommunityGet StartedIntroductionInstallationQuickstartChangelogGuidesConceptsAgentsCrewsFlowsAdvancedCore ConceptsAgentsTasksCrewsFlowsKnowledgeLLMsProcessesCollaborationTrainingMemoryPlanningTestingCLIToolsEvent ListenersUsing LangChain ToolsUsing LlamaIndex ToolsHow to GuidesCreate Custom ToolsSequential ProcessesHierarchical ProcessCreate Your Own Manager AgentConnect to any LLMCustomize AgentsUsing Multimodal AgentsCoding AgentsForce Tool Output as ResultHuman Input on ExecutionKickoff Crew AsynchronouslyKickoff Crew for EachReplay Tasks from Latest Crew KickoffConditional TasksAgent Monitoring & ObservabilityAgentOps IntegrationLangfuse IntegrationLangtrace IntegrationMLflow IntegrationOpenLIT IntegrationOpik IntegrationAgent Monitoring with Arize PhoenixPortkey IntegrationWeave IntegrationToolsAI Mind ToolApify ActorsBedrock Invoke Agent ToolBedrock Knowledge Base RetrieverBrave SearchBrowserbase Web LoaderCode Docs RAG SearchCode InterpreterComposio ToolCSV RAG SearchDALL-E ToolDirectory RAG SearchDirectory ReadDOCX RAG SearchEXA Search Web LoaderFile ReadFile WriteFirecrawl Crawl WebsiteFirecrawl Scrape WebsiteFirecrawl SearchGithub SearchHyperbrowser Load ToolLinkup Search ToolLlamaIndex ToolGoogle Serper SearchS3 Reader ToolS3 Writer ToolScrapegraph Scrape ToolScrape Element From Website ToolJSON RAG SearchMDX RAG SearchMySQL RAG SearchMultiOn ToolNL2SQL ToolPatronus Evaluation ToolsPDF RAG SearchPG RAG SearchQdrant Vector Search ToolRAG ToolScrape WebsiteScrapfly Scrape Website ToolSelenium ScraperSnowflake Search ToolSpider ScraperTXT RAG SearchVision ToolWeaviate Vector SearchWebsite RAG SearchXML RAG SearchYouTube Channel RAG SearchYouTube Video RAG SearchTelemetryTelemetryCore ConceptsToolsUnderstanding and leveraging tools within the CrewAI framework for agent collaboration and task execution.​Introduction
+CrewAI tools empower agents with capabilities ranging from web searching and data analysis to collaboration and delegating tasks among coworkers.
+This documentation outlines how to create, integrate, and leverage these tools within the CrewAI framework, including a new focus on collaboration tools.
+​What is a Tool?
+A tool in CrewAI is a skill or function that agents can utilize to perform various actions.
+This includes tools from the CrewAI Toolkit and LangChain Tools,
+enabling everything from simple searches to complex interactions and effective teamwork among agents.
+​Key Characteristics of Tools
+Utility: Crafted for tasks such as web searching, data analysis, content generation, and agent collaboration.
+Integration: Boosts agent capabilities by seamlessly integrating tools into their workflow.
+Customizability: Provides the flexibility to develop custom tools or utilize existing ones, catering to the specific needs of agents.
+Error Handling: Incorporates robust error handling mechanisms to ensure smooth operation.
+Caching Mechanism: Features intelligent caching to optimize performance and reduce redundant operations.
+​Using CrewAI Tools
+To enhance your agents’ capabilities with crewAI tools, begin by installing our extra tools package:
+pip install 'crewai[tools]'
+Here’s an example demonstrating their use:
+Codeimport os
+from crewai import Agent, Task, Crew
+# Importing crewAI tools
+from crewai_tools import (
+ DirectoryReadTool,
+ FileReadTool,
+ SerperDevTool,
+ WebsiteSearchTool
+)
+# Set up API keys
+os.environ["SERPER_API_KEY"] = "Your Key" # serper.dev API key
+os.environ["OPENAI_API_KEY"] = "Your Key"
+# Instantiate tools
+docs_tool = DirectoryReadTool(directory='./blog-posts')
+file_tool = FileReadTool()
+search_tool = SerperDevTool()
+web_rag_tool = WebsiteSearchTool()
+# Create agents
+researcher = Agent(
+ role='Market Research Analyst',
+ goal='Provide up-to-date market analysis of the AI industry',
+ backstory='An expert analyst with a keen eye for market trends.',
+ tools=[search_tool, web_rag_tool],
+ verbose=True
+)
+writer = Agent(
+ role='Content Writer',
+ goal='Craft engaging blog posts about the AI industry',
+ backstory='A skilled writer with a passion for technology.',
+ tools=[docs_tool, file_tool],
+ verbose=True
+)
+# Define tasks
+research = Task(
+ description='Research the latest trends in the AI industry and provide a summary.',
+ expected_output='A summary of the top 3 trending developments in the AI industry with a unique perspective on their significance.',
+ agent=researcher
+)
+write = Task(
+ description='Write an engaging blog post about the AI industry, based on the research analyst’s summary. Draw inspiration from the latest blog posts in the directory.',
+ expected_output='A 4-paragraph blog post formatted in markdown with engaging, informative, and accessible content, avoiding complex jargon.',
+ agent=writer,
+ output_file='blog-posts/new_post.md' # The final blog post will be saved here
+)
+# Assemble a crew with planning enabled
+crew = Crew(
+ agents=[researcher, writer],
+ tasks=[research, write],
+ verbose=True,
+ planning=True, # Enable planning feature
+)
+# Execute tasks
+crew.kickoff()
+​Available CrewAI Tools
+Error Handling: All tools are built with error handling capabilities, allowing agents to gracefully manage exceptions and continue their tasks.
+Caching Mechanism: All tools support caching, enabling agents to efficiently reuse previously obtained results, reducing the load on external resources and speeding up the execution time. You can also define finer control over the caching mechanism using the cache_function attribute on the tool.
+Here is a list of the available tools and their descriptions:
+ToolDescriptionApifyActorsToolA tool that integrates Apify Actors with your workflows for web scraping and automation tasks.BrowserbaseLoadToolA tool for interacting with and extracting data from web browsers.CodeDocsSearchToolA RAG tool optimized for searching through code documentation and related technical documents.CodeInterpreterToolA tool for interpreting python code.ComposioToolEnables use of Composio tools.CSVSearchToolA RAG tool designed for searching within CSV files, tailored to handle structured data.DALL-E ToolA tool for generating images using the DALL-E API.DirectorySearchToolA RAG tool for searching within directories, useful for navigating through file systems.DOCXSearchToolA RAG tool aimed at searching within DOCX documents, ideal for processing Word files.DirectoryReadToolFacilitates reading and processing of directory structures and their contents.EXASearchToolA tool designed for performing exhaustive searches across various data sources.FileReadToolEnables reading and extracting data from files, supporting various file formats.FirecrawlSearchToolA tool to search webpages using Firecrawl and return the results.FirecrawlCrawlWebsiteToolA tool for crawling webpages using Firecrawl.FirecrawlScrapeWebsiteToolA tool for scraping webpages URL using Firecrawl and returning its contents.GithubSearchToolA RAG tool for searching within GitHub repositories, useful for code and documentation search.SerperDevToolA specialized tool for development purposes, with specific functionalities under development.TXTSearchToolA RAG tool focused on searching within text (.txt) files, suitable for unstructured data.JSONSearchToolA RAG tool designed for searching within JSON files, catering to structured data handling.LlamaIndexToolEnables the use of LlamaIndex tools.MDXSearchToolA RAG tool tailored for searching within Markdown (MDX) files, useful for documentation.PDFSearchToolA RAG tool aimed at searching within PDF documents, ideal for processing scanned documents.PGSearchToolA RAG tool optimized for searching within PostgreSQL databases, suitable for database queries.Vision ToolA tool for generating images using the DALL-E API.RagToolA general-purpose RAG tool capable of handling various data sources and types.ScrapeElementFromWebsiteToolEnables scraping specific elements from websites, useful for targeted data extraction.ScrapeWebsiteToolFacilitates scraping entire websites, ideal for comprehensive data collection.WebsiteSearchToolA RAG tool for searching website content, optimized for web data extraction.XMLSearchToolA RAG tool designed for searching within XML files, suitable for structured data formats.YoutubeChannelSearchToolA RAG tool for searching within YouTube channels, useful for video content analysis.YoutubeVideoSearchToolA RAG tool aimed at searching within YouTube videos, ideal for video data extraction.
+​Creating your own Tools
+Developers can craft custom tools tailored for their agent’s needs or
+utilize pre-built options.
+There are two main ways for one to create a CrewAI tool:
+​Subclassing BaseTool
+Codefrom crewai.tools import BaseTool
+from pydantic import BaseModel, Field
+class MyToolInput(BaseModel):
+ """Input schema for MyCustomTool."""
+ argument: str = Field(..., description="Description of the argument.")
+class MyCustomTool(BaseTool):
+ name: str = "Name of my tool"
+ description: str = "What this tool does. It's vital for effective utilization."
+ args_schema: Type[BaseModel] = MyToolInput
+ def _run(self, argument: str) -> str:
+ # Your tool's logic here
+ return "Tool's result"
+​Utilizing the tool Decorator
+Codefrom crewai.tools import tool
+@tool("Name of my tool")
+def my_tool(question: str) -> str:
+ """Clear description for what this tool is useful for, your agent will need this information to use it."""
+ # Function logic here
+ return "Result from your custom tool"
+​Structured Tools
+The StructuredTool class wraps functions as tools, providing flexibility and validation while reducing boilerplate. It supports custom schemas and dynamic logic for seamless integration of complex functionalities.
+​Example:
+Using StructuredTool.from_function, you can wrap a function that interacts with an external API or system, providing a structured interface. This enables robust validation and consistent execution, making it easier to integrate complex functionalities into your applications as demonstrated in the following example:
+from crewai.tools.structured_tool import CrewStructuredTool
+from pydantic import BaseModel
+# Define the schema for the tool's input using Pydantic
+class APICallInput(BaseModel):
+ endpoint: str
+ parameters: dict
+# Wrapper function to execute the API call
+def tool_wrapper(*args, **kwargs):
+ # Here, you would typically call the API using the parameters
+ # For demonstration, we'll return a placeholder string
+ return f"Call the API at {kwargs['endpoint']} with parameters {kwargs['parameters']}"
+# Create and return the structured tool
+def create_structured_tool():
+ return CrewStructuredTool.from_function(
+ name='Wrapper API',
+ description="A tool to wrap API calls with structured input.",
+ args_schema=APICallInput,
+ func=tool_wrapper,
+ )
+# Example usage
+structured_tool = create_structured_tool()
+# Execute the tool with structured input
+result = structured_tool._run(**{
+ "endpoint": "https://example.com/api",
+ "parameters": {"key1": "value1", "key2": "value2"}
+})
+print(result) # Output: Call the API at https://example.com/api with parameters {'key1': 'value1', 'key2': 'value2'}
+​Custom Caching Mechanism
+Tools can optionally implement a cache_function to fine-tune caching
+behavior. This function determines when to cache results based on specific
+conditions, offering granular control over caching logic.
+Codefrom crewai.tools import tool
+@tool
+def multiplication_tool(first_number: int, second_number: int) -> str:
+ """Useful for when you need to multiply two numbers together."""
+ return first_number * second_number
+def cache_func(args, result):
+ # In this case, we only cache the result if it's a multiple of 2
+ cache = result % 2 == 0
+ return cache
+multiplication_tool.cache_function = cache_func
+writer1 = Agent(
+ role="Writer",
+ goal="You write lessons of math for kids.",
+ backstory="You're an expert in writing and you love to teach kids but you know nothing of math.",
+ tools=[multiplication_tool],
+ allow_delegation=False,
+ )
+ #...
+​Conclusion
+Tools are pivotal in extending the capabilities of CrewAI agents, enabling them to undertake a broad spectrum of tasks and collaborate effectively.
+When building solutions with CrewAI, leverage both custom and existing tools to empower your agents and enhance the AI ecosystem. Consider utilizing error handling,
+caching mechanisms, and the flexibility of tool arguments to optimize your agents’ performance and capabilities.Was this page helpful?YesNoCLIEvent ListenerswebsitexgithublinkedinyoutuberedditPowered by MintlifyOn this pageIntroductionWhat is a Tool?Key Characteristics of ToolsUsing CrewAI ToolsAvailable CrewAI ToolsCreating your own ToolsSubclassing BaseToolUtilizing the tool DecoratorStructured ToolsExample:Custom Caching MechanismConclusion
+
+Final Answer:
+[
+    Agent(
+        role='Data Analyst',
+        goal='Perform deep analysis of large datasets',
+        backstory='Specialized in big data analysis and pattern recognition',
+        task={
+            'Task Name': 'Collect Data on Dangote Stock',
+            'Description': 'Gather relevant data on Dangote stock including historical prices, market trends, and financial reports.',
+            'Expected Output': 'Comprehensive dataset on Dangote stock performance.'
+        },
+        tools={
+            'DirectoryReadTool': 'Facilitates reading and processing of directory structures and their contents.'
+        }
+    ),
+    Agent(
+        role='Financial Analyst',
+        goal='Evaluate the financial performance of Dangote stock',
+        backstory='Experienced in financial data analysis and trend forecasting',
+        task={
+            'Task Name': 'Analyze Dangote Stock Performance',
+            'Description': 'Utilize statistical and financial analysis techniques to evaluate the historical performance of Dangote stock.',
+            'Expected Output': 'Evaluation report on the trends and patterns of Dangote stock.'
+        },
+        tools={
+            'LlamaIndexTool': 'Enables the use of LlamaIndex tools.'
+        }
+    ),
+    Agent(
+        role='Industry Researcher',
+        goal='Identify growth opportunities and threats in the industry',
+        backstory='Knowledgeable in industry research and trend analysis',
+        task={
+            'Task Name': 'Conduct Industry Research',
+            'Description': 'Research the current state of the industry in which Dangote operates to identify potential growth opportunities and threats.',
+            'Expected Output': 'Industry analysis report with key insights.'
+        },
+        tools={
+            'WebsiteSearchTool': 'A RAG tool for searching website content, optimized for web data extraction.'
+        }
+    ),
+    Agent(
+        role='Risk Analyst',
+        goal='Assess the investment risks associated with Dangote stock',
+        backstory='Specialized in risk assessment and mitigation strategies',
+        task={
+            'Task Name': 'Assess Investment Risks',
+            'Description': 'Evaluate the risks associated with investing in Dangote stock, considering market volatility, economic conditions, and company-specific risks.',
+            'Expected Output': 'Risk assessment report highlighting potential investment challenges.'
+        },
+        tools={
+            'FileReadTool': 'Enables reading and extracting data from files, supporting various file formats.'
+        }
+    ),
+    Agent(
+        role='Investment Strategist',
+        goal='Develop a detailed investment strategy for Dangote stock',
+        backstory='Experienced in formulating investment strategies based on data analysis',
+        task={
+            'Task Name': 'Develop Investment Strategy',
+            'Description': 'Formulate a detailed investment strategy for investing in Dangote stock based on the collected data and analysis.',
+            'Expected Output': 'Investment strategy document outlining the recommended approach.'
+        },
+        tools={
+            'SerperDevTool': 'A specialized tool for development purposes, with specific functionalities under development.'
+        }
+    ),
+    Agent(
+        role='Financial Advisor',
+        goal='Provide investment recommendation based on analysis and strategy',
+        backstory='Skilled in providing financial advice and investment recommendations',
+        task={
+            'Task Name': 'Make Investment Recommendation',
+            'Description': 'Based on the analysis and strategy developed, make a final recommendation on whether investing in Dangote stock is advisable.',
+            'Expected Output': 'Investment recommendation with supporting rationale.'
+        },
+        tools={}
+    )
+]
+
+> Finished chain.
+ [DEBUG]: == [Tool Assigning Agent] Task output: [
+    Agent(
+        role='Data Analyst',
+        goal='Perform deep analysis of large datasets',
+        backstory='Specialized in big data analysis and pattern recognition',
+        task={
+            'Task Name': 'Collect Data on Dangote Stock',
+            'Description': 'Gather relevant data on Dangote stock including historical prices, market trends, and financial reports.',
+            'Expected Output': 'Comprehensive dataset on Dangote stock performance.'
+        },
+        tools={
+            'DirectoryReadTool': 'Facilitates reading and processing of directory structures and their contents.'
+        }
+    ),
+    Agent(
+        role='Financial Analyst',
+        goal='Evaluate the financial performance of Dangote stock',
+        backstory='Experienced in financial data analysis and trend forecasting',
+        task={
+            'Task Name': 'Analyze Dangote Stock Performance',
+            'Description': 'Utilize statistical and financial analysis techniques to evaluate the historical performance of Dangote stock.',
+            'Expected Output': 'Evaluation report on the trends and patterns of Dangote stock.'
+        },
+        tools={
+            'LlamaIndexTool': 'Enables the use of LlamaIndex tools.'
+        }
+    ),
+    Agent(
+        role='Industry Researcher',
+        goal='Identify growth opportunities and threats in the industry',
+        backstory='Knowledgeable in industry research and trend analysis',
+        task={
+            'Task Name': 'Conduct Industry Research',
+            'Description': 'Research the current state of the industry in which Dangote operates to identify potential growth opportunities and threats.',
+            'Expected Output': 'Industry analysis report with key insights.'
+        },
+        tools={
+            'WebsiteSearchTool': 'A RAG tool for searching website content, optimized for web data extraction.'
+        }
+    ),
+    Agent(
+        role='Risk Analyst',
+        goal='Assess the investment risks associated with Dangote stock',
+        backstory='Specialized in risk assessment and mitigation strategies',
+        task={
+            'Task Name': 'Assess Investment Risks',
+            'Description': 'Evaluate the risks associated with investing in Dangote stock, considering market volatility, economic conditions, and company-specific risks.',
+            'Expected Output': 'Risk assessment report highlighting potential investment challenges.'
+        },
+        tools={
+            'FileReadTool': 'Enables reading and extracting data from files, supporting various file formats.'
+        }
+    ),
+    Agent(
+        role='Investment Strategist',
+        goal='Develop a detailed investment strategy for Dangote stock',
+        backstory='Experienced in formulating investment strategies based on data analysis',
+        task={
+            'Task Name': 'Develop Investment Strategy',
+            'Description': 'Formulate a detailed investment strategy for investing in Dangote stock based on the collected data and analysis.',
+            'Expected Output': 'Investment strategy document outlining the recommended approach.'
+        },
+        tools={
+            'SerperDevTool': 'A specialized tool for development purposes, with specific functionalities under development.'
+        }
+    ),
+    Agent(
+        role='Financial Advisor',
+        goal='Provide investment recommendation based on analysis and strategy',
+        backstory='Skilled in providing financial advice and investment recommendations',
+        task={
+            'Task Name': 'Make Investment Recommendation',
+            'Description': 'Based on the analysis and strategy developed, make a final recommendation on whether investing in Dangote stock is advisable.',
+            'Expected Output': 'Investment recommendation with supporting rationale.'
+        },
+        tools={}
+    )
+]
+
+
+
+
+########################
+## Here is you custom crew run result:
+########################
+
+[
+    Agent(
+        role='Data Analyst',
+        goal='Perform deep analysis of large datasets',
+        backstory='Specialized in big data analysis and pattern recognition',
+        task={
+            'Task Name': 'Collect Data on Dangote Stock',
+            'Description': 'Gather relevant data on Dangote stock including historical prices, market trends, and financial reports.',
+            'Expected Output': 'Comprehensive dataset on Dangote stock performance.'
+        },
+        tools={
+            'DirectoryReadTool': 'Facilitates reading and processing of directory structures and their contents.'
+        }
+    ),
+    Agent(
+        role='Financial Analyst',
+        goal='Evaluate the financial performance of Dangote stock',
+        backstory='Experienced in financial data analysis and trend forecasting',
+        task={
+            'Task Name': 'Analyze Dangote Stock Performance',
+            'Description': 'Utilize statistical and financial analysis techniques to evaluate the historical performance of Dangote stock.',
+            'Expected Output': 'Evaluation report on the trends and patterns of Dangote stock.'
+        },
+        tools={
+            'LlamaIndexTool': 'Enables the use of LlamaIndex tools.'
+        }
+    ),
+    Agent(
+        role='Industry Researcher',
+        goal='Identify growth opportunities and threats in the industry',
+        backstory='Knowledgeable in industry research and trend analysis',
+        task={
+            'Task Name': 'Conduct Industry Research',
+            'Description': 'Research the current state of the industry in which Dangote operates to identify potential growth opportunities and threats.',
+            'Expected Output': 'Industry analysis report with key insights.'
+        },
+        tools={
+            'WebsiteSearchTool': 'A RAG tool for searching website content, optimized for web data extraction.'
+        }
+    ),
+    Agent(
+        role='Risk Analyst',
+        goal='Assess the investment risks associated with Dangote stock',
+        backstory='Specialized in risk assessment and mitigation strategies',
+        task={
+            'Task Name': 'Assess Investment Risks',
+            'Description': 'Evaluate the risks associated with investing in Dangote stock, considering market volatility, economic conditions, and company-specific risks.',
+            'Expected Output': 'Risk assessment report highlighting potential investment challenges.'
+        },
+        tools={
+            'FileReadTool': 'Enables reading and extracting data from files, supporting various file formats.'
+        }
+    ),
+    Agent(
+        role='Investment Strategist',
+        goal='Develop a detailed investment strategy for Dangote stock',
+        backstory='Experienced in formulating investment strategies based on data analysis',
+        task={
+            'Task Name': 'Develop Investment Strategy',
+            'Description': 'Formulate a detailed investment strategy for investing in Dangote stock based on the collected data and analysis.',
+            'Expected Output': 'Investment strategy document outlining the recommended approach.'
+        },
+        tools={
+            'SerperDevTool': 'A specialized tool for development purposes, with specific functionalities under development.'
+        }
+    ),
+    Agent(
+        role='Financial Advisor',
+        goal='Provide investment recommendation based on analysis and strategy',
+        backstory='Skilled in providing financial advice and investment recommendations',
+        task={
+            'Task Name': 'Make Investment Recommendation',
+            'Description': 'Based on the analysis and strategy developed, make a final recommendation on whether investing in Dangote stock is advisable.',
+            'Expected Output': 'Investment recommendation with supporting rationale.'
+        },
+        tools={}
