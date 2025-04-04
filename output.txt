@@ -980,3 +980,5 @@ Final Answer:
             'Expected Output': 'Investment recommendation with supporting rationale.'
         },
         tools={}
+        )
+    ]
